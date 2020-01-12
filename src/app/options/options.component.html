@@ -1,0 +1,18 @@
+<div class="form-group" style="text-align: center;">
+  <label class="col-sm-2 control-label mt-auto" for="radius">
+    <strong>Radius</strong>
+  </label>
+  <select
+    #radius
+    (change)="setRadius(radius.value)"
+    class="form-control"
+    id="radius"
+    name="radius"
+  >
+    <option value="1000">1km</option>
+    <option value="2000">2km</option>
+    <option value="5000" selected="selected">5km</option>
+    <option value="10000">10km</option>
+    <option value="20000">20km</option>
+  </select>
+</div>

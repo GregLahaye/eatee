@@ -1,0 +1,27 @@
+<div
+  *ngIf="restaurant; else blank"
+  class="card"
+  style="height: 26rem; width: 18rem;"
+>
+  <img
+    *ngIf="restaurant.loaded"
+    [src]="restaurant.photo"
+    class="card-img-top"
+    style="height: 22rem; object-fit: cover; pointer-events: none;;"
+  />
+  <div
+    class="card-footer mt-auto"
+    style="position: absolute; bottom: 0; background-color: #F7F7F7; z-index: 1; width: 100%;"
+  >
+    <h4 class="card-title">{{ restaurant.name }}</h4>
+    <span style="float: right;">{{ restaurant.distance }} kilometres away</span>
+  </div>
+</div>
+
+<ng-template #blank>
+  <div class="card" style="height: 26rem; width: 18rem;">
+    <div class="card-footer mt-auto" style="height: 6rem;">
+      <h5 class="card-title"></h5>
+    </div>
+  </div>
+</ng-template>

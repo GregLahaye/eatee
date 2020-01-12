@@ -1,0 +1,10 @@
+<app-card-front
+  *ngIf="front"
+  [restaurant]="restaurant"
+  class="noselect"
+></app-card-front>
+<app-card-back
+  *ngIf="!front"
+  [restaurant]="restaurant"
+  class="noselect"
+></app-card-back>

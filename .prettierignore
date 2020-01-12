@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.*
+*.ico
+*.png
+*.jpg
+*.svg
+browserslist

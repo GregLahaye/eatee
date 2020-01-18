@@ -126,7 +126,7 @@ async function createRestaurant(result) {
     address: result.vicinity,
     coords: coords,
     photo: source,
-    price: result.price ? +result.price : 0,
+    price: result.price_level ? +result.price_level : 0,
     rating: +result.rating,
     link:
       'https://www.google.com/maps/search/?api=1&query=' +

@@ -9,6 +9,7 @@ import { HttpClientModule } from '@angular/common/http';
 import { CardFrontComponent } from './card/card-front/card-front.component';
 import { CardBackComponent } from './card/card-back/card-back.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { InfoComponent } from './info/info.component';
 
 @NgModule({
   declarations: [
@@ -18,6 +19,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
     HeaderComponent,
     CardFrontComponent,
     CardBackComponent,
+    InfoComponent,
   ],
   imports: [BrowserModule, HttpClientModule, BrowserAnimationsModule],
   providers: [],

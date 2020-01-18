@@ -45,6 +45,31 @@ export class CardComponent implements OnInit, OnDestroy {
     this.restaurantsService.nextRestaurant();
   }
 
+  @HostListener('window:keydown', ['$event'])
+  keydown(event) {
+    switch (event.code) {
+      case 'KeyD':
+      case 'ArrowRight':
+      case 'KeyL':
+        this.restaurantsService.nextRestaurant();
+        break;
+      case 'KeyA':
+      case 'KeyJ':
+      case 'ArrowLeft':
+        this.restaurantsService.previousRestaurant();
+        break;
+      case 'Space':
+      case 'ArrowUp':
+      case 'ArrowDown':
+      case 'KeyW':
+      case 'KeyS':
+      case 'KeyI':
+      case 'KeyK':
+        this.front = !this.front;
+        break;
+    }
+  }
+
   ngOnDestroy() {
     this.restaurantChangedSubscription.unsubscribe();
   }

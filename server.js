@@ -42,84 +42,99 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use('/api/restaurants', (req, res) => {
-  // parse parameters from query
+app.use('/api/restaurants', async (req, res) => {
   const latitude = req.query.latitude;
   const longitude = req.query.longitude;
   const radius = +req.query.radius;
 
-  console.log('Incoming API request: ' + latitude, longitude, radius);
-
-  // search database for Result matching criteria
-  Result.findOne({
+  const result = await Result.findOne({
     latitude,
     longitude,
     radius,
-  })
-    .then((result) => {
-      if (result) {
-        // found matching result in database, send to user
-        console.log('Retrieving result from database');
-        res.status(200).json(result.restaurants);
-      } else {
-        // no matching result found in database, query Google Maps API
-        console.log('Fetching result from API');
-        googleMaps.placesNearby(
-          {
-            language: 'en',
-            location: [latitude, longitude],
-            radius: radius,
-            type: 'restaurant',
-            opennow: true,
-          },
-          (err, response) => {
-            Promise.all(
-              response.json.results.map(async (result) => {
-                const coords = {
-                  latitude: +result.geometry.location.lat,
-                  longitude: +result.geometry.location.lng,
-                };
+  });
 
-                const photo = await getPhoto(result);
-                const source = photo
-                  ? 'https://' + photo.req.socket._host + photo.req.path
-                  : 'https://images.unsplash.com/photo-1578328819058-b69f3a3b0f6b';
+  if (result) {
+    // found matching result in database, send to user
+    console.log('Retrieving result from database');
+    res.status(200).json(result.restaurants);
+  } else {
+    // didn't find matching result in database, fetch from api
+    console.log('Fetching from API');
 
-                return new Restaurant({
-                  name: result.name,
-                  address: result.vicinity,
-                  coords: coords,
-                  photo: source,
-                  price: result.price_level ? +result.price_level : 0,
-                  rating: +result.rating,
-                  link:
-                    'https://www.google.com/maps/search/?api=1&query=' +
-                    result.vicinity +
-                    '&query_place_id=' +
-                    result.place_id,
-                });
-              })
-            ).then((restaurants) => {
-              // create new Result object
-              const result = Result({
-                restaurants,
-                latitude,
-                longitude,
-                radius,
-              });
-              // save result in database
-              result.save();
-              // send result to user
-              res.status(200).json(restaurants);
-            });
-          }
-        );
-      }
-    })
-    .catch((err) => {
-      console.log(err);
-    });
+    let result = await f(latitude, longitude, radius);
+    let restaurants = result.restaurants;
+    let pagetoken = result.pagetoken;
+
+    // fetch more pages
+    while (pagetoken) {
+      result = await f(pagetoken);
+      restaurants = restaurants.concat(result.restaurants);
+      pagetoken = result.pagetoken;
+    }
+
+    res.json(restaurants);
+
+    // save result to database
+    Result({
+      restaurants,
+      latitude,
+      longitude,
+      radius,
+    }).save();
+  }
 });
+
+async function f(a, b, c) {
+  let params;
+  if (arguments.length === 3) {
+    params = {
+      language: 'en',
+      location: [a, b],
+      radius: c,
+      type: 'restaurant',
+      opennow: true,
+    };
+  } else {
+    params = {
+      pagetoken: a,
+    };
+  }
+
+  const response = await googleMaps.placesNearby(params).asPromise();
+  const restaurants = await Promise.all(
+    response.json.results.map(async (result) => {
+      return await g(result);
+    })
+  );
+  const pagetoken = response.json.next_page_token;
+  return { restaurants, pagetoken };
+}
+
+async function g(result) {
+  const coords = {
+    latitude: +result.geometry.location.lat,
+    longitude: +result.geometry.location.lng,
+  };
+
+  const photo = await getPhoto(result);
+  const source = photo
+    ? 'https://' + photo.req.socket._host + photo.req.path
+    : 'assets/not-found.jpg';
+
+  return new Restaurant({
+    name: result.name,
+    address: result.vicinity,
+    coords: coords,
+    photo: source,
+    price: 0,
+    rating: +result.rating,
+    link:
+      'https://www.google.com/maps/search/?api=1&query=' +
+      result.vicinity +
+      '&query_place_id=' +
+      result.place_id,
+  });
+}
 
 function getPhoto(restaurant) {
   if ('photos' in restaurant) {

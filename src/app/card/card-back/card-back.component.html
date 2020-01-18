@@ -8,7 +8,10 @@
     <h6 class="card-subtitle mb-2 text-muted">{{ restaurant.address }}</h6>
     <ul class="list-group">
       <li class="list-group-item bg-light">
-        <strong>Price: {{ '$'.repeat(restaurant.price) }}</strong>
+        <strong
+          >Price:
+          {{ restaurant.price ? '$'.repeat(restaurant.price) : '???' }}</strong
+        >
       </li>
       <li class="list-group-item bg-light">
         <strong>Rating: {{ restaurant.rating }}</strong>

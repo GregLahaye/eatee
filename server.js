@@ -61,13 +61,13 @@ app.use('/api/restaurants', async (req, res) => {
     // didn't find matching result in database, fetch from api
     console.log('Fetching from API');
 
-    let result = await f(latitude, longitude, radius);
+    let result = await fetchRestaurants(latitude, longitude, radius);
     let restaurants = result.restaurants;
     let pagetoken = result.pagetoken;
 
     // fetch more pages
     while (pagetoken) {
-      result = await f(pagetoken);
+      result = await fetchRestaurants(pagetoken);
       restaurants = restaurants.concat(result.restaurants);
       pagetoken = result.pagetoken;
     }
@@ -84,7 +84,7 @@ app.use('/api/restaurants', async (req, res) => {
   }
 });
 
-async function f(a, b, c) {
+async function fetchRestaurants(a, b, c) {
   let params;
   if (arguments.length === 3) {
     params = {
@@ -103,14 +103,14 @@ async function f(a, b, c) {
   const response = await googleMaps.placesNearby(params).asPromise();
   const restaurants = await Promise.all(
     response.json.results.map(async (result) => {
-      return await g(result);
+      return await createRestaurant(result);
     })
   );
   const pagetoken = response.json.next_page_token;
   return { restaurants, pagetoken };
 }
 
-async function g(result) {
+async function createRestaurant(result) {
   const coords = {
     latitude: +result.geometry.location.lat,
     longitude: +result.geometry.location.lng,
@@ -126,7 +126,7 @@ async function g(result) {
     address: result.vicinity,
     coords: coords,
     photo: source,
-    price: 0,
+    price: result.price ? +result.price : 0,
     rating: +result.rating,
     link:
       'https://www.google.com/maps/search/?api=1&query=' +
